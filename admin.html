@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="connect-src 'self' wss://*.firebaseio.com https://*.firebaseio.com data: blob:">
+    <title>Admin - Registrar Propiedad</title>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
+    
+    <!-- Biblioteca QR -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    
+    <!-- Estilos CSS -->
+    <style>
+        :root {
+            --primary: #FF5A5F;
+            --secondary: #008489;
+            --text: #333333;
+            --background: #f7f7f7;
+            --card-bg: #ffffff;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .form-section {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        button, .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 8px 0;
+            font-size: 16px;
+            width: 100%;
+            max-width: 320px;
+            transition: all 0.3s ease;
+            display: inline-block;
+            text-align: center;
+        }
+        
+        button:hover, .btn:hover {
+            background-color: #e04e54;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 10px;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .success-message {
+            color: #2e7d32;
+            background-color: #edf7ed;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            display: none;
+        }
+        
+        .error-message {
+            color: #d32f2f;
+            background-color: #ffebee;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            display: none;
+        }
+        
+        #qr-container {
+            margin: 20px 0;
+            text-align: center;
+            display: none;
+        }
+        
+        #qr-code {
+            margin: 0 auto;
+            padding: 10px;
+            background: white;
+            display: inline-block;
+        }
+        
+        .download-btn {
+            background-color: var(--secondary);
+            margin-top: 10px;
+        }
+        
+        .section-title {
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 5px;
+            margin-top: 30px;
+        }
+        
+        .qr-url {
+            word-break: break-all;
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        .url-copy {
+            cursor: pointer;
+            color: var(--secondary);
+            text-decoration: underline;
+            font-size: 0.9em;
+        }
+        
+        .id-display {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Registrar Nueva Propiedad</h1>
+        <p>Complete el formulario para agregar una nueva propiedad y generar su código QR</p>
+    </div>
+
+    <div class="form-section">
+        <div id="success-message" class="success-message">
+            Propiedad registrada exitosamente!
+        </div>
+        
+        <div id="error-message" class="error-message">
+            Error al registrar la propiedad
+        </div>
+        
+        <form id="property-form">
+            <h3 class="section-title">Información Básica</h3>
+            <label for="country">País:</label>
+            <select id="country" required>
+                <option value="">Seleccione un país</option>
+                <option value="costa_rica">Costa Rica</option>
+                <option value="mexico">México</option>
+                <option value="espana">España</option>
+                <option value="argentina">Argentina</option>
+                <option value="colombia">Colombia</option>
+                <option value="peru">Perú</option>
+                <option value="chile">Chile</option>
+                <option value="panama">Panamá</option>
+                <option value="estados_unidos">Estados Unidos</option>
+                <option value="canada">Canadá</option>
+                <option value="otros">Otros</option>
+            </select>
+            
+            <label>ID de la Propiedad (generado automáticamente):</label>
+            <div class="id-display" id="property-id-display">Se generará al guardar</div>
+            <input type="hidden" id="property-id">
+            
+            <label for="property-name">Nombre de la Propiedad:</label>
+            <input type="text" id="property-name" required placeholder="Ej: Casa de Coco">
+            
+            <button type="submit" id="submit-btn">Guardar Propiedad y Generar QR</button>
+        </form>
+        
+        <div id="qr-container">
+            <h3>Código QR generado</h3>
+            <div id="qr-code"></div>
+            <p>Escanea este código para acceder a la información de la propiedad</p>
+            <div class="qr-url">
+                <span id="qr-url-display"></span>
+                <div class="url-copy" onclick="copyUrl()">(Copiar URL)</div>
+            </div>
+            <button onclick="downloadQR()" class="download-btn">Descargar QR</button>
+            <button onclick="testQR()" class="download-btn">Probar Página</button>
+        </div>
+    </div>
+
+    <script>
+        // ===== CONFIGURACIÓN FIREBASE =====
+        const firebaseConfig = {
+            apiKey: "AIzaSyDyPNn1142JA7l2nOP2QNm0uOmQhq3qMXs",
+            authDomain: "basedatosllaves.firebaseapp.com",
+            databaseURL: "https://basedatosllaves-default-rtdb.firebaseio.com",
+            projectId: "basedatosllaves",
+            storageBucket: "basedatosllaves.appspot.com",
+            messagingSenderId: "234616763395",
+            appId: "1:234616763395:web:2e9977d7d7e4d601dd4a36"
+        };
+
+        // Inicializar Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // Variables para el QR
+        let qrCode = null;
+        let qrUrl = '';
+
+        // ===== FUNCIONES DEL FORMULARIO =====
+        function copyUrl() {
+            if (!qrUrl) return;
+            navigator.clipboard.writeText(qrUrl).then(() => {
+                alert("URL copiada al portapapeles!");
+            }).catch(err => {
+                console.error("Error al copiar: ", err);
+                alert("Error al copiar la URL");
+            });
+        }
+
+        function generateUniqueId() {
+            // Generar un ID único basado en timestamp y random
+            const timestamp = Date.now().toString(36);
+            const random = Math.random().toString(36).substr(2, 5);
+            return `prop_${timestamp}_${random}`;
+        }
+
+        function saveProperty() {
+            const submitBtn = document.getElementById('submit-btn');
+            const successMessage = document.getElementById('success-message');
+            const errorMessage = document.getElementById('error-message');
+            
+            // Ocultar mensajes anteriores
+            successMessage.style.display = 'none';
+            errorMessage.style.display = 'none';
+            
+            // Validar campos requeridos
+            const country = document.getElementById('country').value.trim().toLowerCase().replace(/\s+/g, '_');
+            const propertyName = document.getElementById('property-name').value.trim();
+            
+            // Validación adicional
+            if (!country) {
+                errorMessage.textContent = "Debe seleccionar un país";
+                errorMessage.style.display = 'block';
+                return;
+            }
+            
+            // Generar ID único para la propiedad
+            const propertyId = generateUniqueId();
+            document.getElementById('property-id').value = propertyId;
+            document.getElementById('property-id-display').textContent = propertyId;
+            
+            // Mostrar loading
+            submitBtn.innerHTML = `<span class="loading"></span> Guardando...`;
+            submitBtn.disabled = true;
+            
+            // Crear objeto completo de propiedad
+            const propertyData = {
+                name: propertyName,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            };
+            
+            // Guardar en Firebase
+            const ref = database.ref(`properties/${country}/${propertyId}`);
+            ref.set(propertyData)
+                .then(() => {
+                    successMessage.style.display = 'block';
+                    
+                    // Generar URL para el QR (VERSIÓN CORREGIDA)
+                    const baseUrl = window.location.origin + '/airbnb-hub.html';
+                    qrUrl = `${baseUrl}?country=${encodeURIComponent(country)}&properties=${encodeURIComponent(propertyId)}`;
+                    
+                    // Mostrar URL
+                    document.getElementById('qr-url-display').textContent = qrUrl;
+                    
+                    // Generar QR
+                    generateQR(qrUrl);
+                    
+                    // Mostrar sección QR
+                    document.getElementById('qr-container').style.display = 'block';
+                    
+                    // Desplazarse al QR
+                    document.getElementById('qr-container').scrollIntoView({ behavior: 'smooth' });
+                })
+                .catch((error) => {
+                    console.error("Error saving property:", error);
+                    errorMessage.textContent = "Error al guardar: " + error.message;
+                    errorMessage.style.display = 'block';
+                })
+                .finally(() => {
+                    submitBtn.innerHTML = "Guardar Propiedad y Generar QR";
+                    submitBtn.disabled = false;
+                });
+        }
+
+        function generateQR(url) {
+            const container = document.getElementById('qr-code');
+            
+            // Limpiar QR anterior si existe
+            if (qrCode) {
+                qrCode.clear();
+                container.innerHTML = '';
+            }
+            
+            // Crear nuevo QR
+            qrCode = new QRCode(container, {
+                text: url,
+                width: 200,
+                height: 200,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        }
+
+        function downloadQR() {
+            if (!qrUrl) return;
+            
+            const canvas = document.querySelector('#qr-code canvas');
+            if (!canvas) return;
+            
+            // Crear enlace de descarga
+            const link = document.createElement('a');
+            const propertyId = document.getElementById('property-id').value.trim() || 'property';
+            link.download = `qr-${propertyId}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        function testQR() {
+            if (!qrUrl) {
+                alert("Primero debe guardar la propiedad para generar el QR");
+                return;
+            }
+            window.open(qrUrl, '_blank');
+        }
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', () => {
+            // Configurar el formulario
+            document.getElementById('property-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                saveProperty();
+            });
+            
+            // Poner foco en el primer campo
+            document.getElementById('country').focus();
+        });
+    </script>
+</body>
+</html>
