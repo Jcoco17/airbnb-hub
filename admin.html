@@ -13,6 +13,9 @@
     <!-- Biblioteca QR -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <!-- Estilos CSS -->
     <style>
         :root {
@@ -21,72 +24,135 @@
             --text: #333333;
             --background: #f7f7f7;
             --card-bg: #ffffff;
+            --success: #2e7d32;
+            --error: #d32f2f;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
         
         body {
-            font-family: 'Arial', sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--background);
             color: var(--text);
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
             padding: 20px;
             line-height: 1.6;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            min-height: 100vh;
         }
         
         .header {
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 25px;
+            padding: 30px 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
             text-align: center;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at top left, rgba(255,255,255,0.2) 0%, transparent 60%);
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
         }
         
         .form-section {
             background: var(--card-bg);
-            border-radius: 10px;
-            padding: 20px;
-            margin: 20px 0;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .form-section::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
         }
         
         button, .btn {
             background-color: var(--primary);
             color: white;
             border: none;
-            padding: 12px 20px;
-            border-radius: 8px;
+            padding: 14px 25px;
+            border-radius: 10px;
             cursor: pointer;
-            margin: 8px 0;
-            font-size: 16px;
+            margin: 10px 0;
+            font-size: 17px;
             width: 100%;
-            max-width: 320px;
+            max-width: 350px;
             transition: all 0.3s ease;
-            display: inline-block;
-            text-align: center;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-weight: 600;
         }
         
         button:hover, .btn:hover {
             background-color: #e04e54;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
         }
         
         input, textarea, select {
             width: 100%;
-            padding: 12px;
-            margin: 8px 0 20px;
+            padding: 15px;
+            margin: 10px 0 20px;
             border: 1px solid #ddd;
-            border-radius: 8px;
+            border-radius: 10px;
             font-size: 16px;
             box-sizing: border-box;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(255, 90, 95, 0.2);
+            background: white;
         }
         
         label {
-            font-weight: bold;
+            font-weight: 600;
             display: block;
-            margin-top: 10px;
+            margin-top: 15px;
+            color: var(--text);
+            font-size: 1.05rem;
         }
         
         .loading {
@@ -106,89 +172,195 @@
         }
         
         .success-message {
-            color: #2e7d32;
+            color: var(--success);
             background-color: #edf7ed;
-            padding: 10px;
-            border-radius: 4px;
-            margin: 10px 0;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
             display: none;
+            font-weight: 500;
+            border-left: 4px solid var(--success);
         }
         
         .error-message {
-            color: #d32f2f;
+            color: var(--error);
             background-color: #ffebee;
-            padding: 10px;
-            border-radius: 4px;
-            margin: 10px 0;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
             display: none;
+            font-weight: 500;
+            border-left: 4px solid var(--error);
         }
         
         #qr-container {
-            margin: 20px 0;
+            margin: 30px 0;
             text-align: center;
             display: none;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            border: 1px solid #e9ecef;
         }
         
         #qr-code {
             margin: 0 auto;
-            padding: 10px;
+            padding: 15px;
             background: white;
             display: inline-block;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
         }
         
         .download-btn {
             background-color: var(--secondary);
-            margin-top: 10px;
+            margin: 15px 10px 0;
+            width: auto;
+            padding: 12px 25px;
+        }
+        
+        .download-btn:hover {
+            background-color: #007277;
         }
         
         .section-title {
             border-bottom: 2px solid var(--primary);
-            padding-bottom: 5px;
-            margin-top: 30px;
+            padding-bottom: 10px;
+            margin: 30px 0 20px;
+            font-size: 1.5rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section-title i {
+            font-size: 1.8rem;
         }
         
         .qr-url {
             word-break: break-all;
-            background: #f0f0f0;
-            padding: 10px;
-            border-radius: 5px;
-            margin: 10px 0;
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-size: 1.05rem;
+            font-family: monospace;
+            text-align: left;
+            position: relative;
         }
         
         .url-copy {
             cursor: pointer;
             color: var(--secondary);
-            text-decoration: underline;
-            font-size: 0.9em;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+            padding: 8px 15px;
+            background: rgba(0, 132, 137, 0.1);
+            border-radius: 30px;
+            transition: all 0.3s ease;
+        }
+        
+        .url-copy:hover {
+            background: rgba(0, 132, 137, 0.2);
+            transform: translateY(-2px);
         }
         
         .id-display {
-            background: #f0f0f0;
-            padding: 10px;
-            border-radius: 5px;
-            margin: 10px 0;
+            background: #e9ecef;
+            padding: 12px 15px;
+            border-radius: 10px;
+            margin: 10px 0 20px;
             font-family: monospace;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+        
+        .btn-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .vercel-info {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .vercel-info h3 {
+            color: var(--primary);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .vercel-info ul {
+            padding-left: 20px;
+            margin: 15px 0;
+        }
+        
+        .vercel-info li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+            
+            .header {
+                padding: 25px 15px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .form-section {
+                padding: 25px 20px;
+            }
+            
+            .btn-container {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .download-btn {
+                width: 100%;
+                margin: 5px 0;
+            }
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>Registrar Nueva Propiedad</h1>
-        <p>Complete el formulario para agregar una nueva propiedad y generar su código QR</p>
+        <h1><i class="fas fa-home"></i> Registrar Nueva Propiedad</h1>
+        <p>Complete el formulario para agregar una nueva propiedad y generar su código QR para Vercel</p>
     </div>
 
     <div class="form-section">
         <div id="success-message" class="success-message">
-            Propiedad registrada exitosamente!
+            <i class="fas fa-check-circle"></i> Propiedad registrada exitosamente!
         </div>
         
         <div id="error-message" class="error-message">
-            Error al registrar la propiedad
+            <i class="fas fa-exclamation-circle"></i> Error al registrar la propiedad
         </div>
         
         <form id="property-form">
-            <h3 class="section-title">Información Básica</h3>
-            <label for="country">País:</label>
+            <h3 class="section-title"><i class="fas fa-info-circle"></i> Información Básica</h3>
+            
+            <label for="country"><i class="fas fa-globe-americas"></i> País:</label>
             <select id="country" required>
                 <option value="">Seleccione un país</option>
                 <option value="costa_rica">Costa Rica</option>
@@ -204,26 +376,52 @@
                 <option value="otros">Otros</option>
             </select>
             
-            <label>ID de la Propiedad (generado automáticamente):</label>
+            <label><i class="fas fa-fingerprint"></i> ID de la Propiedad (generado automáticamente):</label>
             <div class="id-display" id="property-id-display">Se generará al guardar</div>
             <input type="hidden" id="property-id">
             
-            <label for="property-name">Nombre de la Propiedad:</label>
+            <label for="property-name"><i class="fas fa-signature"></i> Nombre de la Propiedad:</label>
             <input type="text" id="property-name" required placeholder="Ej: Casa de Coco">
             
-            <button type="submit" id="submit-btn">Guardar Propiedad y Generar QR</button>
+            <button type="submit" id="submit-btn">
+                <i class="fas fa-save"></i> Guardar Propiedad y Generar QR
+            </button>
         </form>
         
+        <div class="vercel-info">
+            <h3><i class="fas fa-cloud-upload-alt"></i> Instrucciones para Vercel</h3>
+            <p>Después de generar el código QR:</p>
+            <ul>
+                <li>Sube ambos archivos (este y airbnb-hub.html) a tu proyecto en Vercel</li>
+                <li>Asegúrate de que la URL base sea correcta en la generación del QR</li>
+                <li>Comprueba que Firebase tenga permisos de lectura/escritura</li>
+                <li>Prueba el código QR en diferentes dispositivos</li>
+            </ul>
+        </div>
+        
         <div id="qr-container">
-            <h3>Código QR generado</h3>
+            <h3 class="section-title"><i class="fas fa-qrcode"></i> Código QR generado</h3>
             <div id="qr-code"></div>
-            <p>Escanea este código para acceder a la información de la propiedad</p>
+            <p>Escanea este código para acceder a la información de la propiedad en Vercel</p>
+            
             <div class="qr-url">
                 <span id="qr-url-display"></span>
-                <div class="url-copy" onclick="copyUrl()">(Copiar URL)</div>
+                <div class="url-copy" onclick="copyUrl()">
+                    <i class="fas fa-copy"></i> Copiar URL
+                </div>
             </div>
-            <button onclick="downloadQR()" class="download-btn">Descargar QR</button>
-            <button onclick="testQR()" class="download-btn">Probar Página</button>
+            
+            <div class="btn-container">
+                <button onclick="downloadQR()" class="download-btn">
+                    <i class="fas fa-download"></i> Descargar QR
+                </button>
+                <button onclick="testQR()" class="download-btn">
+                    <i class="fas fa-external-link-alt"></i> Probar Página
+                </button>
+                <button onclick="window.location.reload()" class="download-btn" style="background: #6c757d;">
+                    <i class="fas fa-redo"></i> Crear Nuevo
+                </button>
+            </div>
         </div>
     </div>
 
@@ -251,7 +449,7 @@
         function copyUrl() {
             if (!qrUrl) return;
             navigator.clipboard.writeText(qrUrl).then(() => {
-                alert("URL copiada al portapapeles!");
+                alert("¡URL copiada al portapapeles! Puede pegarla en Vercel o compartirla.");
             }).catch(err => {
                 console.error("Error al copiar: ", err);
                 alert("Error al copiar la URL");
@@ -275,7 +473,7 @@
             errorMessage.style.display = 'none';
             
             // Validar campos requeridos
-            const country = document.getElementById('country').value.trim().toLowerCase().replace(/\s+/g, '_');
+            let country = document.getElementById('country').value.trim();
             const propertyName = document.getElementById('property-name').value.trim();
             
             // Validación adicional
@@ -284,6 +482,15 @@
                 errorMessage.style.display = 'block';
                 return;
             }
+            
+            if (!propertyName) {
+                errorMessage.textContent = "Debe ingresar un nombre para la propiedad";
+                errorMessage.style.display = 'block';
+                return;
+            }
+            
+            // Formatear país para URL
+            country = country.toLowerCase().replace(/\s+/g, '_');
             
             // Generar ID único para la propiedad
             const propertyId = generateUniqueId();
@@ -297,18 +504,26 @@
             // Crear objeto completo de propiedad
             const propertyData = {
                 name: propertyName,
+                country: country,
                 timestamp: firebase.database.ServerValue.TIMESTAMP
             };
             
-            // Guardar en Firebase
-            const ref = database.ref(`properties/${country}/${propertyId}`);
+            // Guardar en Firebase (estructura compatible con la página de recomendaciones)
+            const ref = database.ref(`properties/${country}/${propertyId}/propertyData`);
             ref.set(propertyData)
                 .then(() => {
                     successMessage.style.display = 'block';
                     
-                    // Generar URL para el QR (VERSIÓN CORREGIDA)
-                    const baseUrl = window.location.origin + '/airbnb-hub.html';
-                    qrUrl = `${baseUrl}?country=${encodeURIComponent(country)}&properties=${encodeURIComponent(propertyId)}`;
+                    // Generar URL para el QR (VERSIÓN CORREGIDA PARA VERCEL)
+                    // Usar la ubicación actual para construir la URL base
+                    const currentUrl = window.location.href;
+                    const basePath = currentUrl.substring(0, currentUrl.lastIndexOf('/'));
+                    
+                    // IMPORTANTE: Asegúrate de que el nombre del archivo coincida con tu proyecto
+                    const pageName = 'airbnb-hub.html'; // Cambiar si es necesario
+                    qrUrl = `${basePath}/${pageName}?country=${encodeURIComponent(country)}&properties=${encodeURIComponent(propertyId)}`;
+                    
+                    console.log("URL generada:", qrUrl);
                     
                     // Mostrar URL
                     document.getElementById('qr-url-display').textContent = qrUrl;
@@ -328,7 +543,7 @@
                     errorMessage.style.display = 'block';
                 })
                 .finally(() => {
-                    submitBtn.innerHTML = "Guardar Propiedad y Generar QR";
+                    submitBtn.innerHTML = `<i class="fas fa-save"></i> Guardar Propiedad y Generar QR`;
                     submitBtn.disabled = false;
                 });
         }
@@ -345,8 +560,8 @@
             // Crear nuevo QR
             qrCode = new QRCode(container, {
                 text: url,
-                width: 200,
-                height: 200,
+                width: 220,
+                height: 220,
                 colorDark: "#000000",
                 colorLight: "#ffffff",
                 correctLevel: QRCode.CorrectLevel.H
@@ -354,7 +569,10 @@
         }
 
         function downloadQR() {
-            if (!qrUrl) return;
+            if (!qrUrl) {
+                alert("Primero debe guardar la propiedad para generar el QR");
+                return;
+            }
             
             const canvas = document.querySelector('#qr-code canvas');
             if (!canvas) return;
@@ -385,6 +603,10 @@
             
             // Poner foco en el primer campo
             document.getElementById('country').focus();
+            
+            // Mostrar mensaje inicial
+            console.log("Página de administración configurada para Vercel");
         });
     </script>
 </body>
+</html>

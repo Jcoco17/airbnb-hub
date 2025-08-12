@@ -3,21 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Solución de caché optimizada -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
+    
+    <!-- Política de seguridad simplificada -->
     <meta http-equiv="Content-Security-Policy" 
-          content="default-src 'self'; 
-                   connect-src 'self' https://*.firebaseio.com wss://*.firebaseio.com;
-                   script-src 'self' 'unsafe-inline' https://www.gstatic.com https://cdnjs.cloudflare.com;
-                   style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com;
-                   font-src 'self' https://cdnjs.cloudflare.com;
-                   img-src 'self' data: blob: https:;">
+          content="default-src 'self' data: blob:; 
+                   style-src 'unsafe-inline' 'self' https://cdnjs.cloudflare.com; 
+                   script-src 'unsafe-inline' 'self' https://www.gstatic.com https://cdnjs.cloudflare.com; 
+                   connect-src 'self' https://basedatosllaves-default-rtdb.firebaseio.com wss://basedatosllaves-default-rtdb.firebaseio.com; 
+                   img-src 'self' data: blob: https:;
+                   font-src 'self' https://cdnjs.cloudflare.com;">
+    
     <title>Experiencia Airbnb - Recomendaciones</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Font Awesome optimizado -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    
     <style>
         :root {
             --primary: #FF5A5F;
@@ -902,16 +911,16 @@
     
     <script>
         // ===== SOLUCIÓN PARA EL CACHÉ =====
-        // Comprobar si la página está cargando una versión antigua
-        if (performance.navigation.type === 1) {
-            const params = new URLSearchParams(window.location.search);
-            params.set('_', Date.now());
-            window.location.search = params.toString();
+        if ('caches' in window) {
+            caches.keys().then(cacheNames => {
+                cacheNames.forEach(cacheName => {
+                    caches.delete(cacheName);
+                });
+            });
         }
-        
-        // Mostrar notificación de caché
+
         document.getElementById('force-reload').addEventListener('click', function() {
-            window.location.reload(true); // Recarga forzada sin caché
+            window.location.reload(true);
         });
         
         // Mostrar fecha actual en el footer
@@ -930,14 +939,15 @@
             appId: "1:234616763395:web:2e9977d7d7e4d601dd4a36"
         };
 
-        // Inicializar Firebase
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
+        // Inicializar Firebase correctamente
+        const app = firebase.initializeApp(firebaseConfig);
+        const database = app.database();
         
         // Obtener parámetros de la URL
         const urlParams = new URLSearchParams(window.location.search);
         const country = urlParams.get('country') || 'costa-rica';
         const propertyId = urlParams.get('properties') || 'prop_default';
+        console.log("Parámetros de URL:", {country, propertyId});
         
         // Validar parámetros
         if (!country || !propertyId) {
@@ -950,7 +960,7 @@
             document.getElementById('cache-notification').classList.remove('hidden');
         }
         
-        // Referencias a Firebase
+        // Referencias a Firebase CORREGIDAS
         const propertyRef = database.ref(`properties/${country}/${propertyId}/propertyData`);
         const hostRecommendationsRef = database.ref(`properties/${country}/${propertyId}/hostRecommendations`);
         const guestRecommendationsRef = database.ref(`properties/${country}/${propertyId}/guestRecommendations`);
@@ -970,7 +980,6 @@
             document.getElementById('loading-spinner').style.display = 'none';
         }
         
-        // Función corregida para cargar datos de propiedad
         function loadPropertyData() {
             showSpinner();
             
@@ -982,10 +991,16 @@
                     // Mostrar país desde parámetro URL (convertido a formato amigable)
                     const countryDisplay = country.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
                     document.getElementById('property-location').textContent = countryDisplay;
+                    
+                    // Ocultar notificación de caché si todo está bien
+                    document.getElementById('cache-notification').classList.add('hidden');
                 } else {
-                    document.getElementById('property-location').textContent = "Ubicación no disponible";
-                    console.error("Datos de propiedad no encontrados");
-                    showToast("Propiedad no encontrada", "warning");
+                    // Crear propiedad si no existe
+                    propertyRef.set({
+                        name: "Propiedad en " + country,
+                        created: new Date().getTime()
+                    });
+                    document.getElementById('property-location').textContent = countryDisplay;
                 }
                 hideSpinner();
             }).catch(error => {
@@ -1626,3 +1641,4 @@
         });
     </script>
 </body>
+</html>
